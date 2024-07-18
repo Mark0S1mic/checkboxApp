@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkbox Recognition - Paper Documents</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='paper_background.png') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{ url_for('static', filename='BoxyLogo.jpg') }}" alt="Logo" class="logo-large">
+            <h1>Upload an Image with Checkboxes (Paper Documents)</h1>
+            <button onclick="window.location.href='/'">Switch to E-Document Scanning</button>
+        </div>
+        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="doc_type" value="paper">
+            <div class="upload-area" id="upload-area">
+                <input type="file" name="file" id="file-input" accept="image/*" required>
+                <p>Drag and drop your photo here or click to upload</p>
+            </div>
+            <button type="submit" id="upload-button">Upload</button>
+        </form>
+        <div class="image-container">
+            <div class="image-section">
+                <h2>Original Image</h2>
+                <img id="image-preview" src="" alt="Image Preview">
+            </div>
+            <div class="image-section">
+                <h2>Processed Image</h2>
+                <img id="result-image" src="" alt="Result Image">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const uploadArea = document.getElementById('upload-area');
+        const imagePreview = document.getElementById('image-preview');
+        const resultImage = document.getElementById('result-image');
+        const form = document.getElementById('upload-form');
+        const uploadButton = document.getElementById('upload-button');
+    
+        uploadArea.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+    
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+    
+        uploadArea.addEventListener('drop', (event) => {
+            event.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            fileInput.files = event.dataTransfer.files;
+            previewImage();
+        });
+    
+        fileInput.addEventListener('change', previewImage);
+    
+        function previewImage() {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+    
+            reader.onload = (event) => {
+                imagePreview.src = event.target.result;
+                resultImage.src = "";
+            };
+    
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+    
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(form);
+    
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultImage.src = data.result_url;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+    
+</body>
+</html>
